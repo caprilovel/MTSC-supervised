@@ -10,6 +10,27 @@ from global_utils.find_gpus import find_gpus
 os.environ['CUDA_VISIBLE_DEVICES'] = find_gpus()
 import warnings
 warnings.filterwarnings('ignore')
+
+#--------------------------------------#
+
+#   命令行参数设置
+
+#--------------------------------------#
+from utils.Args import TorchArgs 
+args = TorchArgs()
+
+
+args.add_argument(
+    '--model_index', type=int, default=0, help="model index"
+)
+args.add_argument(
+    '--dataset_index', type=int, default=0, help="dataset index"
+)
+args.add_argument(
+    '--patch_size', type=int, default=4, help="patch size"
+)
+
+dict_args = vars(args.parse_args())
 #--------------------------------------#
 
 #   日志设置
@@ -19,7 +40,7 @@ from global_utils.log_utils import get_time_str,mkdir,Logger
 import sys
 
 models_name = ["convtransformer", "swintransformer", "resnet1d", "alibimodel"]
-model_name = models_name[1]
+model_name = models_name[dict_args["model_index"]]
 timestamp = str(model_name) + get_time_str() 
 mkdir('./log/{}'.format(timestamp))
 
@@ -30,21 +51,10 @@ if using_log:
 print("-------------Generate Log File---------------")
 print('log file dir:./log/')
 print('log: {}'.format(log_path))
-
-
-#--------------------------------------#
-
-#   命令行参数设置
-
-#--------------------------------------#
-from utils.Args import TorchArgs 
-args = TorchArgs()
-dict_args = vars(args.parse_args())
 for k,v in dict_args.items():
     print("{}: {}".format(k,v))
-args.add_argument(
-    
-)
+
+
 
     
 import torch
@@ -67,7 +77,7 @@ from torch.utils.data import DataLoader
 dataset_path = './data/raw/' 
 dataset_names = yaml_convert_config('./data/dataset.yml')
 el_dataset = dataset_names['equallength']
-dataset_name = el_dataset[7]
+dataset_name = el_dataset[dict_args['dataset_index']]
 train_dataset = UEADataset(dataset_name)
 datashape = train_dataset.data[0].shape
 test_dataset = UEADataset(dataset_name, train=False)
@@ -97,6 +107,7 @@ elif model_name == "swintransformer":
     from model.SwinTranformer1d import SwinTransformer1D
     model = SwinTransformer1D(
         num_classes=len(labels),
+        patch_size=dict_args['patch_size'],
         in_chans=datashape[0],
         embed_dim=128,
         depths=[2, 2, 6, 2],

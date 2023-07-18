@@ -455,13 +455,19 @@ class BasicLayer(nn.Module):
 
 
 class PatchEmbed1D(nn.Module):
-    """ Video to Patch Embedding.
+    """ Time series to Patch Embedding. The crucial difference from Transformer.
 
     Args:
         patch_size (int): Patch token size. Default: 4.
         in_chans (int): Number of input video channels. Default: 3.
         embed_dim (int): Number of linear projection output channels. Default: 96.
         norm_layer (nn.Module, optional): Normalization layer. Default: None
+        
+    Examples:
+        >>> x = torch.randn(1, 3, 256)
+        >>> model = PatchEmbed1D(4, 3, 96)
+        >>> model(x).shape
+        torch.Size([1, 96, 64])
     """
 
     def __init__(self, patch_size=4, in_chans=32, embed_dim=128, norm_layer=None):
@@ -480,9 +486,9 @@ class PatchEmbed1D(nn.Module):
 
     def forward(self, x):
         """Forward function."""
-        # padding
         _, _, L = x.size()
         if L % self.patch_size != 0:
+            # padding
             x = F.pad(x, (0, self.patch_size - L % self.patch_size))
 
         x = self.proj(x)  # B C Wl
@@ -517,6 +523,10 @@ class SwinTransformer1D(nn.Module):
         patch_norm (bool): If True, add normalization after patch embedding. Default: False.
         frozen_stages (int): Stages to be frozen (stop grad and set eval mode).
             -1 means not freezing any parameters.
+            
+            
+    Examples:
+
     """
 
     def __init__(self,
@@ -543,7 +553,7 @@ class SwinTransformer1D(nn.Module):
         self.window_size = window_size
         self.patch_size = patch_size
 
-        # split image into non-overlapping patches
+        # split time series into non-overlapping patches
         self.patch_embed = PatchEmbed1D(
             patch_size=patch_size, in_chans=in_chans, embed_dim=embed_dim,
             norm_layer=norm_layer if self.patch_norm else None)
