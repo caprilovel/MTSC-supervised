@@ -78,9 +78,11 @@ dataset_path = './data/raw/'
 dataset_names = yaml_convert_config('./data/dataset.yml')
 el_dataset = dataset_names['equallength']
 dataset_name = el_dataset[dict_args['dataset_index']]
+
 train_dataset = UEADataset(dataset_name)
-datashape = train_dataset.data[0].shape
 test_dataset = UEADataset(dataset_name, train=False)
+
+datashape = train_dataset.data[0].shape
 labels = np.unique(train_dataset.label)
 one_hot = MyOnehot(labels)
 batch_size = dict_args['batch_size']

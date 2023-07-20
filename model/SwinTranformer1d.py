@@ -91,6 +91,13 @@ def window_partition(x, window_size):
 
     Returns:
         windows: (num_windows*B, window_size, C)
+        
+    Examples:
+        >>> x = torch.rand(1, 100, 512)
+        >>> windows = window_partition(x, window_size=4)
+        >>> windows.shape
+        torch.Size([25, 4, 512])
+
     """
     B, L, C = x.shape
     x = x.view(B, L // window_size, window_size, C)
